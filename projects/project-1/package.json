@@ -9,6 +9,7 @@
     "preview": "node_modules/.bin/vite preview"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "vite": "^7.3.1"
   },
   "dependencies": {

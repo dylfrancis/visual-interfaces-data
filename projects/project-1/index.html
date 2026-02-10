@@ -2,12 +2,35 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>project-1</title>
+    <title>Literacy & Internet Usage</title>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <header>
+        <h1>Literacy Rates vs. Internet Usage by Country</h1>
+        <p class="byline">By Dylan Francis</p>
+        <p class="data-source">
+          Data from <a href="https://ourworldindata.org" target="_blank">Our World in Data</a>.
+          Literacy rates and internet usage share use the most recent available year per country (up to 2023).
+        </p>
+      </header>
+
+      <section class="chart-section">
+        <h2>Distribution of Literacy Rates (%)</h2>
+        <div id="histogram-literacy"></div>
+      </section>
+
+      <section class="chart-section">
+        <h2>Distribution of Internet Usage (%)</h2>
+        <div id="histogram-internet"></div>
+      </section>
+
+      <section class="chart-section">
+        <h2>Literacy Rate vs. Internet Usage</h2>
+        <div id="scatterplot"></div>
+      </section>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
