@@ -12,24 +12,42 @@
         <p class="byline">By Dylan Francis</p>
         <p class="data-source">
           Data from <a href="https://ourworldindata.org" target="_blank">Our World in Data</a>.
-          Literacy rates and internet usage share use the most recent available year per country (up to 2023).
+          Most recent available year per country (up to 2023).
         </p>
       </header>
 
-      <section class="chart-section">
-        <h2>Distribution of Literacy Rates (%)</h2>
-        <div id="histogram-literacy"></div>
-      </section>
+      <div class="dashboard">
+        <!-- Top row: histograms + scatterplot -->
+        <div class="top-row">
+          <section class="chart-section">
+            <h2>Distribution of Literacy Rates</h2>
+            <div id="histogram-literacy"></div>
+          </section>
 
-      <section class="chart-section">
-        <h2>Distribution of Internet Usage (%)</h2>
-        <div id="histogram-internet"></div>
-      </section>
+          <section class="chart-section">
+            <h2>Distribution of Internet Usage</h2>
+            <div id="histogram-internet"></div>
+          </section>
 
-      <section class="chart-section">
-        <h2>Literacy Rate vs. Internet Usage</h2>
-        <div id="scatterplot"></div>
-      </section>
+          <section class="chart-section">
+            <h2>Literacy Rate vs. Internet Usage</h2>
+            <div id="scatterplot"></div>
+          </section>
+        </div>
+
+        <!-- Bottom row: choropleth maps side-by-side -->
+        <div class="bottom-row">
+          <section class="chart-section">
+            <h2>Literacy Rate by Country</h2>
+            <div id="choropleth-literacy"></div>
+          </section>
+
+          <section class="chart-section">
+            <h2>Internet Usage by Country</h2>
+            <div id="choropleth-internet"></div>
+          </section>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.js"></script>
   </body>

@@ -1,6 +1,6 @@
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  line-height: 1.4;
   color: #213547;
   background-color: #ffffff;
 }
@@ -8,55 +8,99 @@
 body {
   margin: 0;
   min-width: 320px;
+  height: 100vh;
+  overflow: hidden;
 }
 
 #app {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 2rem;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 1rem;
+  box-sizing: border-box;
 }
 
 header {
   text-align: center;
-  margin-bottom: 2rem;
-}
-
-h1 {
-  font-size: 2rem;
+  flex-shrink: 0;
   margin-bottom: 0.25rem;
 }
 
+h1 {
+  font-size: 1.3rem;
+  margin: 0 0 0.1rem;
+}
+
 .byline {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: #555;
-  margin: 0.25rem 0;
+  margin: 0;
 }
 
 .data-source {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: #777;
+  margin: 0;
 }
 
 .data-source a {
   color: #646cff;
 }
 
+.dashboard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-height: 0;
+}
+
+.top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.bottom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  flex: 1.2;
+  min-height: 0;
+}
+
 .chart-section {
-  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .chart-section h2 {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  margin: 0 0 0.15rem;
+  text-align: center;
+}
+
+.chart-section svg {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 .tooltip {
   position: absolute;
   pointer-events: none;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   color: #fff;
-  padding: 6px 10px;
+  padding: 5px 8px;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   white-space: nowrap;
+  z-index: 10;
+}
+
+.legend {
+  font-size: 0.65rem;
 }

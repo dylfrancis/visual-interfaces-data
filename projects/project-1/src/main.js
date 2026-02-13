@@ -1,9 +1,9 @@
 import './style.css';
 import * as d3 from 'd3';
 
-const margin = { top: 20, right: 30, bottom: 50, left: 60 };
-const width = 900 - margin.left - margin.right;
-const height = 400 - margin.top - margin.bottom;
+const margin = { top: 15, right: 20, bottom: 40, left: 50 };
+const width = 500 - margin.left - margin.right;
+const height = 280 - margin.top - margin.bottom;
 
 // Tooltip shared across charts
 const tooltip = d3.select('body')
@@ -12,9 +12,10 @@ const tooltip = d3.select('body')
   .style('opacity', 0);
 
 async function loadData() {
-  const [literacyRaw, internetRaw] = await Promise.all([
+  const [literacyRaw, internetRaw, world] = await Promise.all([
     d3.csv('/data/cross-country-literacy-rates.csv'),
     d3.csv('/data/share-of-individuals-using-the-internet.csv'),
+    d3.json('/data/world.json'),
   ]);
 
   // For each country, take the most recent year's value
@@ -22,7 +23,6 @@ async function loadData() {
     const byEntity = d3.group(rows, d => d.Entity);
     const result = [];
     for (const [entity, entries] of byEntity) {
-      // Filter to entries with a valid Code (countries only, not aggregates)
       const withCode = entries.filter(d => d.Code && d.Code.trim() !== '');
       if (withCode.length === 0) continue;
       const latest = withCode.reduce((a, b) => (+a.Year > +b.Year ? a : b));
@@ -53,7 +53,7 @@ async function loadData() {
     }
   }
 
-  return { literacy, internet, merged };
+  return { literacy, internet, merged, world };
 }
 
 function drawHistogram(containerId, data, label, color) {
@@ -102,25 +102,27 @@ function drawHistogram(containerId, data, label, color) {
   // X axis
   svg.append('g')
     .attr('transform', `translate(0,${height})`)
-    .call(d3.axisBottom(x));
+    .call(d3.axisBottom(x).ticks(6))
+    .selectAll('text').style('font-size', '0.65rem');
 
   svg.append('text')
     .attr('x', width / 2)
-    .attr('y', height + 40)
+    .attr('y', height + 32)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '0.85rem')
+    .attr('font-size', '0.7rem')
     .text(label);
 
   // Y axis
   svg.append('g')
-    .call(d3.axisLeft(y));
+    .call(d3.axisLeft(y).ticks(5))
+    .selectAll('text').style('font-size', '0.65rem');
 
   svg.append('text')
     .attr('transform', 'rotate(-90)')
     .attr('x', -height / 2)
-    .attr('y', -45)
+    .attr('y', -35)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '0.85rem')
+    .attr('font-size', '0.7rem')
     .text('Number of Countries');
 }
 
@@ -143,25 +145,27 @@ function drawScatterplot(containerId, data) {
   // X axis
   svg.append('g')
     .attr('transform', `translate(0,${height})`)
-    .call(d3.axisBottom(x));
+    .call(d3.axisBottom(x).ticks(6))
+    .selectAll('text').style('font-size', '0.65rem');
 
   svg.append('text')
     .attr('x', width / 2)
-    .attr('y', height + 40)
+    .attr('y', height + 32)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '0.85rem')
+    .attr('font-size', '0.7rem')
     .text('Literacy Rate (%)');
 
   // Y axis
   svg.append('g')
-    .call(d3.axisLeft(y));
+    .call(d3.axisLeft(y).ticks(5))
+    .selectAll('text').style('font-size', '0.65rem');
 
   svg.append('text')
     .attr('transform', 'rotate(-90)')
     .attr('x', -height / 2)
-    .attr('y', -45)
+    .attr('y', -35)
     .attr('text-anchor', 'middle')
-    .attr('font-size', '0.85rem')
+    .attr('font-size', '0.7rem')
     .text('Internet Usage (%)');
 
   // Dots
@@ -170,7 +174,7 @@ function drawScatterplot(containerId, data) {
     .join('circle')
     .attr('cx', d => x(d.literacy))
     .attr('cy', d => y(d.internet))
-    .attr('r', 5)
+    .attr('r', 4)
     .attr('fill', '#6366f1')
     .attr('opacity', 0.7)
     .attr('stroke', '#fff')
@@ -190,12 +194,120 @@ function drawScatterplot(containerId, data) {
     });
 }
 
+function drawChoropleth(containerId, world, dataArray, label, colorScheme) {
+  const mapWidth = 600;
+  const mapHeight = 340;
+  const mapMargin = { top: 5, right: 10, bottom: 30, left: 10 };
+
+  // Build lookup by country code
+  const dataMap = new Map(dataArray.map(d => [d.code, d]));
+
+  // Color scale
+  const colorScale = d3.scaleSequential(colorScheme)
+    .domain([0, 100]);
+
+  const svg = d3.select(containerId)
+    .append('svg')
+    .attr('viewBox', `0 0 ${mapWidth} ${mapHeight}`)
+    .attr('preserveAspectRatio', 'xMidYMid meet');
+
+  const g = svg.append('g')
+    .attr('transform', `translate(${mapMargin.left},${mapMargin.top})`);
+
+  const innerWidth = mapWidth - mapMargin.left - mapMargin.right;
+  const innerHeight = mapHeight - mapMargin.top - mapMargin.bottom;
+
+  // Projection
+  const projection = d3.geoNaturalEarth1()
+    .fitSize([innerWidth, innerHeight], world);
+
+  const path = d3.geoPath().projection(projection);
+
+  // Draw countries
+  g.selectAll('path')
+    .data(world.features)
+    .join('path')
+    .attr('d', path)
+    .attr('fill', d => {
+      const entry = dataMap.get(d.id);
+      return entry ? colorScale(entry.value) : '#ddd';
+    })
+    .attr('stroke', '#999')
+    .attr('stroke-width', 0.3)
+    .on('mouseover', (event, d) => {
+      const entry = dataMap.get(d.id);
+      tooltip.transition().duration(100).style('opacity', 1);
+      if (entry) {
+        tooltip.html(
+          `<strong>${d.properties.name}</strong><br>` +
+          `${label}: ${entry.value.toFixed(1)}% (${entry.year})`
+        );
+      } else {
+        tooltip.html(`<strong>${d.properties.name}</strong><br>No data`);
+      }
+      tooltip
+        .style('left', (event.pageX + 12) + 'px')
+        .style('top', (event.pageY - 28) + 'px');
+
+      d3.select(event.currentTarget)
+        .attr('stroke', '#333')
+        .attr('stroke-width', 1.2);
+    })
+    .on('mouseout', (event) => {
+      tooltip.transition().duration(200).style('opacity', 0);
+      d3.select(event.currentTarget)
+        .attr('stroke', '#999')
+        .attr('stroke-width', 0.3);
+    });
+
+  // Legend
+  const legendWidth = 200;
+  const legendHeight = 10;
+  const legendX = (mapWidth - legendWidth) / 2;
+  const legendY = mapHeight - 18;
+
+  // Gradient
+  const defs = svg.append('defs');
+  const gradientId = `gradient-${containerId.replace('#', '')}`;
+  const gradient = defs.append('linearGradient')
+    .attr('id', gradientId);
+
+  const nStops = 10;
+  for (let i = 0; i <= nStops; i++) {
+    gradient.append('stop')
+      .attr('offset', `${(i / nStops) * 100}%`)
+      .attr('stop-color', colorScale((i / nStops) * 100));
+  }
+
+  svg.append('rect')
+    .attr('x', legendX)
+    .attr('y', legendY)
+    .attr('width', legendWidth)
+    .attr('height', legendHeight)
+    .style('fill', `url(#${gradientId})`);
+
+  // Legend axis
+  const legendScale = d3.scaleLinear()
+    .domain([0, 100])
+    .range([legendX, legendX + legendWidth]);
+
+  svg.append('g')
+    .attr('transform', `translate(0,${legendY + legendHeight})`)
+    .call(d3.axisBottom(legendScale).ticks(5).tickFormat(d => d + '%'))
+    .call(g => g.select('.domain').remove())
+    .selectAll('text').style('font-size', '0.55rem');
+}
+
 async function main() {
-  const { literacy, internet, merged } = await loadData();
+  const { literacy, internet, merged, world } = await loadData();
 
   drawHistogram('#histogram-literacy', literacy, 'Literacy Rate (%)', '#3b82f6');
-  drawHistogram('#histogram-internet', internet, 'Internet Usage (% of population)', '#10b981');
+  drawHistogram('#histogram-internet', internet, 'Internet Usage (%)', '#10b981');
   drawScatterplot('#scatterplot', merged);
+
+  // Choropleth maps
+  drawChoropleth('#choropleth-literacy', world, literacy, 'Literacy Rate', d3.interpolateBlues);
+  drawChoropleth('#choropleth-internet', world, internet, 'Internet Usage', d3.interpolateGreens);
 }
 
 await main();
