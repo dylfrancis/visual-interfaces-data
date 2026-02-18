@@ -3,12 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Literacy & Internet Usage</title>
+    <title>Global Development Dashboard</title>
   </head>
   <body>
     <div id="app">
       <header>
-        <h1>Literacy Rates vs. Internet Usage by Country</h1>
+        <h1>Global Development Dashboard</h1>
         <p class="byline">By Dylan Francis</p>
         <p class="data-source">
           Data from <a href="https://ourworldindata.org" target="_blank">Our World in Data</a>.
@@ -16,21 +16,42 @@
         </p>
       </header>
 
+      <div class="controls">
+        <div class="control-group">
+          <label for="select-x">X-Axis / Left Map:</label>
+          <select id="select-x">
+            <option value="literacy" selected>Literacy Rate (%)</option>
+            <option value="internet">Internet Usage (%)</option>
+            <option value="gdp">GDP per Capita ($)</option>
+            <option value="lifeExpectancy">Life Expectancy (years)</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="select-y">Y-Axis / Right Map:</label>
+          <select id="select-y">
+            <option value="literacy">Literacy Rate (%)</option>
+            <option value="internet" selected>Internet Usage (%)</option>
+            <option value="gdp">GDP per Capita ($)</option>
+            <option value="lifeExpectancy">Life Expectancy (years)</option>
+          </select>
+        </div>
+      </div>
+
       <div class="dashboard">
         <!-- Top row: histograms + scatterplot -->
         <div class="top-row">
           <section class="chart-section">
-            <h2>Distribution of Literacy Rates</h2>
-            <div id="histogram-literacy"></div>
+            <h2 id="title-hist-x">Distribution of Literacy Rate</h2>
+            <div id="histogram-x"></div>
           </section>
 
           <section class="chart-section">
-            <h2>Distribution of Internet Usage</h2>
-            <div id="histogram-internet"></div>
+            <h2 id="title-hist-y">Distribution of Internet Usage</h2>
+            <div id="histogram-y"></div>
           </section>
 
           <section class="chart-section">
-            <h2>Literacy Rate vs. Internet Usage</h2>
+            <h2 id="title-scatter">Literacy Rate vs. Internet Usage</h2>
             <div id="scatterplot"></div>
           </section>
         </div>
@@ -38,13 +59,13 @@
         <!-- Bottom row: choropleth maps side-by-side -->
         <div class="bottom-row">
           <section class="chart-section">
-            <h2>Literacy Rate by Country</h2>
-            <div id="choropleth-literacy"></div>
+            <h2 id="title-map-x">Literacy Rate by Country</h2>
+            <div id="choropleth-x"></div>
           </section>
 
           <section class="chart-section">
-            <h2>Internet Usage by Country</h2>
-            <div id="choropleth-internet"></div>
+            <h2 id="title-map-y">Internet Usage by Country</h2>
+            <div id="choropleth-y"></div>
           </section>
         </div>
       </div>
