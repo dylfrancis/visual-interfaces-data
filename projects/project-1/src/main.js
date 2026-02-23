@@ -11,6 +11,28 @@ const tooltip = d3.select('body')
   .attr('class', 'tooltip')
   .style('opacity', 0);
 
+function positionTooltip(event) {
+  const node = tooltip.node();
+  const pad = 12;
+  const rect = node.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.height;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  let left = event.pageX + pad;
+  let top = event.pageY - h - pad;
+
+  // Flip left if overflowing right
+  if (left + w > vw - pad) left = event.pageX - w - pad;
+  // Flip down if overflowing top
+  if (top < pad) top = event.pageY + pad;
+  // Clamp bottom
+  if (top + h > vh - pad) top = vh - h - pad;
+
+  tooltip.style('left', left + 'px').style('top', top + 'px');
+}
+
 // Attribute configuration
 const ATTRIBUTES = {
   literacy: {
@@ -47,28 +69,39 @@ const ATTRIBUTES = {
   },
 };
 
-// When a brush is active, this holds the Set of selected entity names.
-// null means "no brush active" (show everything at full opacity).
-let selectedEntities = null;
-let activeBrushSource = null; // which chart owns the current brush
+// Each brush stores its own selected entity set keyed by brushId.
+// The final highlight is the intersection of all active brushes.
+const activeBrushes = new Map();
 
-// Registered updaters - each draw function pushes a highlight callback here.
-// renderAll clears this array before redrawing.
 let highlightCallbacks = [];
-// Track brush selections so we can programmatically clear them
 let brushSelections = [];
 
-function broadcastHighlight(entities, source) {
-  selectedEntities = entities;
-  activeBrushSource = source;
-  for (const cb of highlightCallbacks) cb(entities);
+function computeIntersection() {
+  const sets = [...activeBrushes.values()];
+  if (sets.length === 0) return null;
+  let result = new Set(sets[0]);
+  for (let i = 1; i < sets.length; i++) {
+    result = new Set([...result].filter(e => sets[i].has(e)));
+  }
+  return result;
+}
+
+function broadcastHighlight(entities, brushId) {
+  if (entities) {
+    activeBrushes.set(brushId, entities);
+  } else {
+    activeBrushes.delete(brushId);
+  }
+  const combined = computeIntersection();
+  for (const cb of highlightCallbacks) cb(combined);
 }
 
 function clearAllBrushes() {
   for (const bs of brushSelections) {
     bs.group.call(bs.brush.move, null);
   }
-  broadcastHighlight(null, null);
+  activeBrushes.clear();
+  for (const cb of highlightCallbacks) cb(null);
 }
 
 async function loadData() {
@@ -169,7 +202,7 @@ function drawHistogram(containerId, data, attrKey, brushId) {
       if (!event.sourceEvent) return;
       const sel = event.selection;
       if (!sel) {
-        if (activeBrushSource === brushId) broadcastHighlight(null, null);
+        broadcastHighlight(null, brushId);
         return;
       }
       const [x0, x1] = sel.map(x.invert);
@@ -198,9 +231,8 @@ function drawHistogram(containerId, data, attrKey, brushId) {
     .style('pointer-events', 'all')
     .on('mouseover', (event, d) => {
       tooltip.transition().duration(100).style('opacity', 1);
-      tooltip.html(`${cfg.format(d.x0)}–${cfg.format(d.x1)}: ${d.length} countries`)
-        .style('left', (event.pageX + 12) + 'px')
-        .style('top', (event.pageY - 28) + 'px');
+      tooltip.html(`${cfg.format(d.x0)}–${cfg.format(d.x1)}: ${d.length} countries`);
+      positionTooltip(event);
     })
     .on('mouseout', () => {
       tooltip.transition().duration(200).style('opacity', 0);
@@ -297,7 +329,7 @@ function drawScatterplot(containerId, merged, xKey, yKey) {
       if (!event.sourceEvent) return;
       const sel = event.selection;
       if (!sel) {
-        if (activeBrushSource === 'scatter') broadcastHighlight(null, null);
+        broadcastHighlight(null, 'scatter');
         return;
       }
       const [[bx0, by0], [bx1, by1]] = sel;
@@ -335,9 +367,8 @@ function drawScatterplot(containerId, merged, xKey, yKey) {
         `<strong>${d.entity}</strong><br>` +
         `${xCfg.label}: ${xCfg.format(d.xValue)} (${d.xYear})<br>` +
         `${yCfg.label}: ${yCfg.format(d.yValue)} (${d.yYear})`
-      )
-        .style('left', (event.pageX + 12) + 'px')
-        .style('top', (event.pageY - 28) + 'px');
+      );
+      positionTooltip(event);
     })
     .on('mouseout', () => {
       tooltip.transition().duration(200).style('opacity', 0);
@@ -407,9 +438,7 @@ function drawChoropleth(containerId, world, dataArray, attrKey) {
       } else {
         tooltip.html(`<strong>${d.properties.name}</strong><br>No data`);
       }
-      tooltip
-        .style('left', (event.pageX + 12) + 'px')
-        .style('top', (event.pageY - 28) + 'px');
+      positionTooltip(event);
       d3.select(event.currentTarget)
         .attr('stroke', '#333')
         .attr('stroke-width', 1.2);
@@ -476,8 +505,7 @@ function renderAll(datasets, world, xKey, yKey) {
   // Reset highlight state on full redraw
   highlightCallbacks = [];
   brushSelections = [];
-  selectedEntities = null;
-  activeBrushSource = null;
+  activeBrushes.clear();
 
   const xData = datasets[xKey];
   const yData = datasets[yKey];

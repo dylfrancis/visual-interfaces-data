@@ -1,5 +1,9 @@
 # Project 1 Documentation – Literacy Rate, Internet Usage, Life Expectancy, and GDP per Capita
 
+## Motivation
+The motivation behind this project was to explore the relationship between the literacy rate and internet usage as I believed the two were closely correlated, but perhaps there were some trends that were unexpected.
+I then expanded the project to include the life expectancy and GDP per capita to see if there were any trends between the variables, as these are two factors that indicate the health of a country.
+
 ## Data
 The data used in this project can be found in the public/data folder. It depicts four datasets by country:
 - Literacy rate | [Link to source](https://ourworldindata.org/grapher/cross-country-literacy-rates)
