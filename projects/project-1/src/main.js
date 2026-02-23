@@ -11,7 +11,7 @@ const tooltip = d3.select('body')
   .attr('class', 'tooltip')
   .style('opacity', 0);
 
-// Attribute configuration: color, scheme, domain, units
+// Attribute configuration
 const ATTRIBUTES = {
   literacy: {
     label: 'Literacy Rate',
@@ -32,7 +32,7 @@ const ATTRIBUTES = {
   gdp: {
     label: 'GDP per Capita',
     unit: '$',
-    domain: null, // auto
+    domain: null,
     color: '#f59e0b',
     interpolate: d3.interpolateOranges,
     format: v => '$' + Math.round(v).toLocaleString(),
@@ -40,12 +40,36 @@ const ATTRIBUTES = {
   lifeExpectancy: {
     label: 'Life Expectancy',
     unit: 'years',
-    domain: null, // auto
+    domain: null,
     color: '#ef4444',
     interpolate: d3.interpolateReds,
     format: v => v.toFixed(1) + ' yrs',
   },
 };
+
+// When a brush is active, this holds the Set of selected entity names.
+// null means "no brush active" (show everything at full opacity).
+let selectedEntities = null;
+let activeBrushSource = null; // which chart owns the current brush
+
+// Registered updaters - each draw function pushes a highlight callback here.
+// renderAll clears this array before redrawing.
+let highlightCallbacks = [];
+// Track brush selections so we can programmatically clear them
+let brushSelections = [];
+
+function broadcastHighlight(entities, source) {
+  selectedEntities = entities;
+  activeBrushSource = source;
+  for (const cb of highlightCallbacks) cb(entities);
+}
+
+function clearAllBrushes() {
+  for (const bs of brushSelections) {
+    bs.group.call(bs.brush.move, null);
+  }
+  broadcastHighlight(null, null);
+}
 
 async function loadData() {
   const [literacyRaw, internetRaw, gdpRaw, lifeExpRaw, world] = await Promise.all([
@@ -56,7 +80,6 @@ async function loadData() {
     d3.json('/data/world.json'),
   ]);
 
-  // For each country, take the most recent year's value
   function mostRecent(rows, valueCol) {
     const byEntity = d3.group(rows, d => d.Entity);
     const result = [];
@@ -81,7 +104,7 @@ async function loadData() {
   return { datasets, world };
 }
 
-function mergeDatasets(dataA, dataB, keyA, keyB) {
+function mergeDatasets(dataA, dataB) {
   const mapB = new Map(dataB.map(d => [d.entity, d]));
   const merged = [];
   for (const a of dataA) {
@@ -100,7 +123,7 @@ function mergeDatasets(dataA, dataB, keyA, keyB) {
   return merged;
 }
 
-function drawHistogram(containerId, data, attrKey) {
+function drawHistogram(containerId, data, attrKey, brushId) {
   const cfg = ATTRIBUTES[attrKey];
   const container = d3.select(containerId);
   container.selectAll('*').remove();
@@ -124,20 +147,55 @@ function drawHistogram(containerId, data, attrKey) {
     .domain(x.domain())
     .thresholds(x.ticks(20))(values);
 
+  const entityToBin = new Map();
+  for (const d of data) {
+    for (let i = 0; i < bins.length; i++) {
+      const bin = bins[i];
+      if (d.value >= bin.x0 && (d.value < bin.x1 || (i === bins.length - 1 && d.value <= bin.x1))) {
+        entityToBin.set(d.entity, i);
+        break;
+      }
+    }
+  }
+
   const y = d3.scaleLinear()
     .domain([0, d3.max(bins, d => d.length)])
     .nice()
     .range([height, 0]);
 
-  // Bars
-  svg.selectAll('rect')
+  const brush = d3.brushX()
+    .extent([[0, 0], [width, height]])
+    .on('start brush end', (event) => {
+      if (!event.sourceEvent) return;
+      const sel = event.selection;
+      if (!sel) {
+        if (activeBrushSource === brushId) broadcastHighlight(null, null);
+        return;
+      }
+      const [x0, x1] = sel.map(x.invert);
+      const entities = new Set();
+      for (const d of data) {
+        if (d.value >= x0 && d.value <= x1) entities.add(d.entity);
+      }
+      broadcastHighlight(entities, brushId);
+    });
+
+  const brushGroup = svg.append('g')
+    .attr('class', 'brush')
+    .call(brush);
+
+  brushSelections.push({ group: brushGroup, brush });
+
+  const bars = svg.selectAll('rect.bar')
     .data(bins)
     .join('rect')
+    .attr('class', 'bar')
     .attr('x', d => x(d.x0) + 1)
     .attr('y', d => y(d.length))
     .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - 1))
     .attr('height', d => height - y(d.length))
     .attr('fill', cfg.color)
+    .style('pointer-events', 'all')
     .on('mouseover', (event, d) => {
       tooltip.transition().duration(100).style('opacity', 1);
       tooltip.html(`${cfg.format(d.x0)}–${cfg.format(d.x1)}: ${d.length} countries`)
@@ -173,6 +231,19 @@ function drawHistogram(containerId, data, attrKey) {
     .attr('text-anchor', 'middle')
     .attr('font-size', '0.7rem')
     .text('Number of Countries');
+
+  highlightCallbacks.push((entities) => {
+    if (!entities) {
+      bars.attr('opacity', 1);
+      return;
+    }
+    bars.attr('opacity', (d, i) => {
+      for (const dd of data) {
+        if (entityToBin.get(dd.entity) === i && entities.has(dd.entity)) return 1;
+      }
+      return 0.15;
+    });
+  });
 }
 
 function drawScatterplot(containerId, merged, xKey, yKey) {
@@ -191,15 +262,8 @@ function drawScatterplot(containerId, merged, xKey, yKey) {
   const xDomain = xCfg.domain || d3.extent(merged, d => d.xValue);
   const yDomain = yCfg.domain || d3.extent(merged, d => d.yValue);
 
-  const x = d3.scaleLinear()
-    .domain(xDomain)
-    .nice()
-    .range([0, width]);
-
-  const y = d3.scaleLinear()
-    .domain(yDomain)
-    .nice()
-    .range([height, 0]);
+  const x = d3.scaleLinear().domain(xDomain).nice().range([0, width]);
+  const y = d3.scaleLinear().domain(yDomain).nice().range([height, 0]);
 
   // X axis
   svg.append('g')
@@ -227,8 +291,34 @@ function drawScatterplot(containerId, merged, xKey, yKey) {
     .attr('font-size', '0.7rem')
     .text(`${yCfg.label} (${yCfg.unit})`);
 
-  // Dots — colored by Y-axis attribute
-  svg.selectAll('circle')
+  const brush = d3.brush()
+    .extent([[0, 0], [width, height]])
+    .on('start brush end', (event) => {
+      if (!event.sourceEvent) return;
+      const sel = event.selection;
+      if (!sel) {
+        if (activeBrushSource === 'scatter') broadcastHighlight(null, null);
+        return;
+      }
+      const [[bx0, by0], [bx1, by1]] = sel;
+      const entities = new Set();
+      for (const d of merged) {
+        const cx = x(d.xValue);
+        const cy = y(d.yValue);
+        if (cx >= bx0 && cx <= bx1 && cy >= by0 && cy <= by1) {
+          entities.add(d.entity);
+        }
+      }
+      broadcastHighlight(entities, 'scatter');
+    });
+
+  const brushGroup = svg.append('g')
+    .attr('class', 'brush')
+    .call(brush);
+
+  brushSelections.push({ group: brushGroup, brush });
+
+  const dots = svg.selectAll('circle')
     .data(merged)
     .join('circle')
     .attr('cx', d => x(d.xValue))
@@ -238,6 +328,7 @@ function drawScatterplot(containerId, merged, xKey, yKey) {
     .attr('opacity', 0.7)
     .attr('stroke', '#fff')
     .attr('stroke-width', 0.5)
+    .style('pointer-events', 'all')
     .on('mouseover', (event, d) => {
       tooltip.transition().duration(100).style('opacity', 1);
       tooltip.html(
@@ -251,6 +342,16 @@ function drawScatterplot(containerId, merged, xKey, yKey) {
     .on('mouseout', () => {
       tooltip.transition().duration(200).style('opacity', 0);
     });
+
+  highlightCallbacks.push((entities) => {
+    if (!entities) {
+      dots.attr('opacity', 0.7).attr('r', 4);
+      return;
+    }
+    dots
+      .attr('opacity', d => entities.has(d.entity) ? 0.9 : 0.08)
+      .attr('r', d => entities.has(d.entity) ? 5 : 3);
+  });
 }
 
 function drawChoropleth(containerId, world, dataArray, attrKey) {
@@ -262,14 +363,11 @@ function drawChoropleth(containerId, world, dataArray, attrKey) {
   const container = d3.select(containerId);
   container.selectAll('*').remove();
 
-  // Build lookup by country code
   const dataMap = new Map(dataArray.map(d => [d.code, d]));
-
-  // Color scale
+  new Map(dataArray.map(d => [d.entity, d.code]));
   const values = dataArray.map(d => d.value);
   const domain = cfg.domain || [0, d3.max(values)];
-  const colorScale = d3.scaleSequential(cfg.interpolate)
-    .domain(domain);
+  const colorScale = d3.scaleSequential(cfg.interpolate).domain(domain);
 
   const svg = container
     .append('svg')
@@ -282,14 +380,13 @@ function drawChoropleth(containerId, world, dataArray, attrKey) {
   const innerWidth = mapWidth - mapMargin.left - mapMargin.right;
   const innerHeight = mapHeight - mapMargin.top - mapMargin.bottom;
 
-  // Projection
   const projection = d3.geoNaturalEarth1()
     .fitSize([innerWidth, innerHeight], world);
-
   const path = d3.geoPath().projection(projection);
 
-  // Draw countries
-  g.selectAll('path')
+  const codeToEntity = new Map(dataArray.map(d => [d.code, d.entity]));
+
+  const paths = g.selectAll('path')
     .data(world.features)
     .join('path')
     .attr('d', path)
@@ -313,7 +410,6 @@ function drawChoropleth(containerId, world, dataArray, attrKey) {
       tooltip
         .style('left', (event.pageX + 12) + 'px')
         .style('top', (event.pageY - 28) + 'px');
-
       d3.select(event.currentTarget)
         .attr('stroke', '#333')
         .attr('stroke-width', 1.2);
@@ -331,11 +427,9 @@ function drawChoropleth(containerId, world, dataArray, attrKey) {
   const legendX = (mapWidth - legendWidth) / 2;
   const legendY = mapHeight - 18;
 
-  // Gradient
   const defs = svg.append('defs');
   const gradientId = `gradient-${containerId.replace('#', '')}-${attrKey}`;
-  const gradient = defs.append('linearGradient')
-    .attr('id', gradientId);
+  const gradient = defs.append('linearGradient').attr('id', gradientId);
 
   const nStops = 10;
   for (let i = 0; i <= nStops; i++) {
@@ -346,16 +440,11 @@ function drawChoropleth(containerId, world, dataArray, attrKey) {
   }
 
   svg.append('rect')
-    .attr('x', legendX)
-    .attr('y', legendY)
-    .attr('width', legendWidth)
-    .attr('height', legendHeight)
+    .attr('x', legendX).attr('y', legendY)
+    .attr('width', legendWidth).attr('height', legendHeight)
     .style('fill', `url(#${gradientId})`);
 
-  // Legend axis
-  const legendScale = d3.scaleLinear()
-    .domain(domain)
-    .range([legendX, legendX + legendWidth]);
+  const legendScale = d3.scaleLinear().domain(domain).range([legendX, legendX + legendWidth]);
 
   const tickFormat = cfg.unit === '$'
     ? d => '$' + d3.format('~s')(d)
@@ -368,25 +457,42 @@ function drawChoropleth(containerId, world, dataArray, attrKey) {
     .call(d3.axisBottom(legendScale).ticks(5).tickFormat(tickFormat))
     .call(g => g.select('.domain').remove())
     .selectAll('text').style('font-size', '0.55rem');
+
+  highlightCallbacks.push((entities) => {
+    if (!entities) {
+      paths.attr('opacity', 1);
+      return;
+    }
+    paths.attr('opacity', d => {
+      const ent = codeToEntity.get(d.id);
+      if (ent && entities.has(ent)) return 1;
+      // No data countries stay dimmed
+      return 0.15;
+    });
+  });
 }
 
 function renderAll(datasets, world, xKey, yKey) {
+  // Reset highlight state on full redraw
+  highlightCallbacks = [];
+  brushSelections = [];
+  selectedEntities = null;
+  activeBrushSource = null;
+
   const xData = datasets[xKey];
   const yData = datasets[yKey];
   const xCfg = ATTRIBUTES[xKey];
   const yCfg = ATTRIBUTES[yKey];
-  const merged = mergeDatasets(xData, yData, xKey, yKey);
+  const merged = mergeDatasets(xData, yData);
 
-  // Update chart titles
   d3.select('#title-hist-x').text(`Distribution of ${xCfg.label}`);
   d3.select('#title-hist-y').text(`Distribution of ${yCfg.label}`);
   d3.select('#title-scatter').text(`${xCfg.label} vs. ${yCfg.label}`);
   d3.select('#title-map-x').text(`${xCfg.label} by Country`);
   d3.select('#title-map-y').text(`${yCfg.label} by Country`);
 
-  // Draw all charts
-  drawHistogram('#histogram-x', xData, xKey);
-  drawHistogram('#histogram-y', yData, yKey);
+  drawHistogram('#histogram-x', xData, xKey, 'hist-x');
+  drawHistogram('#histogram-y', yData, yKey, 'hist-y');
   drawScatterplot('#scatterplot', merged, xKey, yKey);
   drawChoropleth('#choropleth-x', world, xData, xKey);
   drawChoropleth('#choropleth-y', world, yData, yKey);
@@ -397,6 +503,7 @@ async function main() {
 
   const selectX = document.getElementById('select-x');
   const selectY = document.getElementById('select-y');
+  const resetBtn = document.getElementById('reset-brush');
 
   function update() {
     renderAll(datasets, world, selectX.value, selectY.value);
@@ -404,8 +511,8 @@ async function main() {
 
   selectX.addEventListener('change', update);
   selectY.addEventListener('change', update);
+  resetBtn.addEventListener('click', clearAllBrushes);
 
-  // Initial render
   update();
 }
 

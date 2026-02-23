@@ -85,6 +85,21 @@ h1 {
   outline-offset: 1px;
 }
 
+.control-group button {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  color: #213547;
+  cursor: pointer;
+}
+
+.control-group button:hover {
+  background: #f0f0f0;
+  border-color: #999;
+}
+
 .dashboard {
   flex: 1;
   display: flex;
@@ -141,4 +156,16 @@ h1 {
 
 .legend {
   font-size: 0.65rem;
+}
+
+.brush .selection {
+  fill: #666;
+  fill-opacity: 0.15;
+  stroke: #333;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.brush .overlay {
+  cursor: crosshair;
 }
