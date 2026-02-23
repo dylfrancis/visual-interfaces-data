@@ -8,12 +8,11 @@
 body {
   margin: 0;
   min-width: 320px;
-  height: 100vh;
-  overflow: hidden;
 }
 
 #app {
   height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: 0.5rem 1rem;
@@ -45,6 +44,54 @@ h1 {
 
 .data-source a {
   color: #646cff;
+}
+
+.nav-links {
+  margin-top: 0.25rem;
+}
+
+.nav-links a {
+  font-size: 0.8rem;
+  color: #646cff;
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
+
+/* Docs page */
+#docs-app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem 2rem 3rem;
+}
+
+#docs-app header {
+  margin-bottom: 1.5rem;
+}
+
+#docs-content {
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+#docs-content h1, #docs-content h2, #docs-content h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+#docs-content ul, #docs-content ol {
+  padding-left: 1.5rem;
+}
+
+#docs-content a {
+  color: #646cff;
+}
+
+#docs-content img {
+  max-width: 100%;
+  border-radius: 4px;
 }
 
 .controls {
