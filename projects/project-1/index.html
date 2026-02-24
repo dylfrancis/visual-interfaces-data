@@ -65,12 +65,18 @@
         <!-- Bottom row: choropleth maps side-by-side -->
         <div class="bottom-row">
           <section class="chart-section">
-            <h2 id="title-map-x">Literacy Rate by Country</h2>
+            <div class="map-header">
+              <h2 id="title-map-x">Literacy Rate by Country</h2>
+              <button class="map-mode-toggle" data-mode="hover">Switch to Brush</button>
+            </div>
             <div id="choropleth-x"></div>
           </section>
 
           <section class="chart-section">
-            <h2 id="title-map-y">Internet Usage by Country</h2>
+            <div class="map-header">
+              <h2 id="title-map-y">Internet Usage by Country</h2>
+              <button class="map-mode-toggle" data-mode="hover">Switch to Brush</button>
+            </div>
             <div id="choropleth-y"></div>
           </section>
         </div>

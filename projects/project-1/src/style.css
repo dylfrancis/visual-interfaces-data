@@ -189,6 +189,33 @@ h1 {
   min-height: 0;
 }
 
+.map-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.map-header h2 {
+  margin: 0;
+}
+
+.map-mode-toggle {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  background: #f5f7fa;
+  color: #444;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.map-mode-toggle:hover {
+  background: #e8ebf0;
+  border-color: #777;
+}
+
 .tooltip {
   position: absolute;
   pointer-events: none;

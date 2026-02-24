@@ -488,6 +488,37 @@ function drawChoropleth(containerId, world, dataArray, attrKey, brushId) {
 
   brushSelections.push({ group: brushGroup, brush });
 
+  // Mode toggle: hover (default) vs brush
+  // In hover mode, brush overlay is hidden so paths get pointer events
+  // In brush mode, brush overlay is on top and paths are non-interactive
+  function setMapMode(mode) {
+    if (mode === 'brush') {
+      brushGroup.style('display', null);
+      paths.style('pointer-events', 'none');
+    } else {
+      brushGroup.style('display', 'none');
+      paths.style('pointer-events', 'visiblePainted');
+    }
+  }
+
+  // Start in hover mode
+  setMapMode('hover');
+
+  // Wire up the toggle button for this map (button is a sibling in the parent section)
+  const section = d3.select(container.node().parentNode);
+  const toggleBtn = section.select('.map-mode-toggle');
+  if (!toggleBtn.empty()) {
+    // Reset button state on redraw
+    toggleBtn.attr('data-mode', 'hover').text('Switch to Brush');
+    toggleBtn.on('click', () => {
+      const currentMode = toggleBtn.attr('data-mode');
+      const newMode = currentMode === 'hover' ? 'brush' : 'hover';
+      toggleBtn.attr('data-mode', newMode);
+      toggleBtn.text(newMode === 'hover' ? 'Switch to Brush' : 'Switch to Hover');
+      setMapMode(newMode);
+    });
+  }
+
   // Legend
   const legendWidth = 200;
   const legendHeight = 10;
