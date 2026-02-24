@@ -105,12 +105,13 @@ function clearAllBrushes() {
 }
 
 async function loadData() {
+  const base = import.meta.env.BASE_URL;
   const [literacyRaw, internetRaw, gdpRaw, lifeExpRaw, world] = await Promise.all([
-    d3.csv('/data/cross-country-literacy-rates.csv'),
-    d3.csv('/data/share-of-individuals-using-the-internet.csv'),
-    d3.csv('/data/gdp-per-capita-worldbank.csv'),
-    d3.csv('/data/life-expectancy-hmd-unwpp.csv'),
-    d3.json('/data/world.json'),
+    d3.csv(`${base}data/cross-country-literacy-rates.csv`),
+    d3.csv(`${base}data/share-of-individuals-using-the-internet.csv`),
+    d3.csv(`${base}data/gdp-per-capita-worldbank.csv`),
+    d3.csv(`${base}data/life-expectancy-hmd-unwpp.csv`),
+    d3.json(`${base}data/world.json`),
   ]);
 
   function mostRecent(rows, valueCol) {
