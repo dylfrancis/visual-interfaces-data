@@ -8,7 +8,7 @@ https://dylfrancis.github.io/visual-interfaces-data/
 ## Projects
 
 ### Project 1
-https://dylfrancis.github.io/visual-interfaces-data/project1/
+https://dylfrancis.github.io/visual-interfaces-data/project-1/
 
 ## Repository Contents
 - [Portfolio Code](./docs)
