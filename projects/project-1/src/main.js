@@ -385,7 +385,7 @@ function drawScatterplot(containerId, merged, xKey, yKey) {
   });
 }
 
-function drawChoropleth(containerId, world, dataArray, attrKey) {
+function drawChoropleth(containerId, world, dataArray, attrKey, brushId) {
   const cfg = ATTRIBUTES[attrKey];
   const mapWidth = 600;
   const mapHeight = 340;
@@ -449,6 +449,44 @@ function drawChoropleth(containerId, world, dataArray, attrKey) {
         .attr('stroke', '#999')
         .attr('stroke-width', 0.3);
     });
+
+  // Precompute centroids for brush hit for countries
+  const centroids = new Map();
+  for (const feature of world.features) {
+    const [cx, cy] = path.centroid(feature);
+    if (!isNaN(cx) && !isNaN(cy)) {
+      centroids.set(feature.id, [cx, cy]);
+    }
+  }
+
+  const brush = d3.brush()
+    .extent([[0, 0], [innerWidth, innerHeight]])
+    .on('start brush end', (event) => {
+      if (!event.sourceEvent) return;
+      const sel = event.selection;
+      if (!sel) {
+        broadcastHighlight(null, brushId);
+        return;
+      }
+      const [[bx0, by0], [bx1, by1]] = sel;
+      const entities = new Set();
+      for (const feature of world.features) {
+        const c = centroids.get(feature.id);
+        if (!c) continue;
+        const [cx, cy] = c;
+        if (cx >= bx0 && cx <= bx1 && cy >= by0 && cy <= by1) {
+          const ent = codeToEntity.get(feature.id);
+          if (ent) entities.add(ent);
+        }
+      }
+      broadcastHighlight(entities, brushId);
+    });
+
+  const brushGroup = g.append('g')
+    .attr('class', 'brush')
+    .call(brush);
+
+  brushSelections.push({ group: brushGroup, brush });
 
   // Legend
   const legendWidth = 200;
@@ -522,8 +560,8 @@ function renderAll(datasets, world, xKey, yKey) {
   drawHistogram('#histogram-x', xData, xKey, 'hist-x');
   drawHistogram('#histogram-y', yData, yKey, 'hist-y');
   drawScatterplot('#scatterplot', merged, xKey, yKey);
-  drawChoropleth('#choropleth-x', world, xData, xKey);
-  drawChoropleth('#choropleth-y', world, yData, yKey);
+  drawChoropleth('#choropleth-x', world, xData, xKey, 'map-x');
+  drawChoropleth('#choropleth-y', world, yData, yKey, 'map-y');
 }
 
 async function main() {
