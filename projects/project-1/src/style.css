@@ -232,6 +232,11 @@ h1 {
   font-size: 0.65rem;
 }
 
+.gridlines line {
+  stroke: #e0e0e0;
+  stroke-width: 0.5;
+}
+
 .brush .selection {
   fill: #666;
   fill-opacity: 0.15;

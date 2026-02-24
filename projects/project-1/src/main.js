@@ -298,6 +298,18 @@ function drawScatterplot(containerId, merged, xKey, yKey) {
   const x = d3.scaleLinear().domain(xDomain).nice().range([0, width]);
   const y = d3.scaleLinear().domain(yDomain).nice().range([height, 0]);
 
+  // Gridlines
+  svg.append('g')
+    .attr('class', 'gridlines')
+    .attr('transform', `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(6).tickSize(-height).tickFormat(''))
+    .call(g => g.select('.domain').remove());
+
+  svg.append('g')
+    .attr('class', 'gridlines')
+    .call(d3.axisLeft(y).ticks(5).tickSize(-width).tickFormat(''))
+    .call(g => g.select('.domain').remove());
+
   // X axis
   svg.append('g')
     .attr('transform', `translate(0,${height})`)
