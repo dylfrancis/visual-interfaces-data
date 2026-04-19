@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Visualization in the Wild: Musicmap | Dylan Francis</title>
+  <meta charset="UTF-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link crossorigin="anonymous" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        referrerpolicy="no-referrer" rel="stylesheet"/>
+  <style>
+    figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 0.5rem;
+    }
+    figcaption {
+      margin-top: 0.75rem;
+      color: #9ca3af;
+      font-size: 0.875rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+<div class="max-w-3xl mx-auto px-6 md:px-10 lg:px-12 py-12">
+
+  <nav class="mb-8">
+    <a class="text-blue-400 hover:text-blue-300 text-sm" href="../">
+      <i class="fa-solid fa-arrow-left"></i> Back to Portfolio
+    </a>
+  </nav>
+
+  <header class="mb-12">
+    <p class="text-sm uppercase tracking-widest text-gray-400 mb-2">Visualization in the Wild</p>
+    <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">Musicmap</h1>
+    <p class="text-xl text-gray-300 mb-6">A genealogy of 234 popular music genres, plotted across 140 years and 23 super-genres.</p>
+    <div class="flex flex-wrap gap-4 text-sm">
+      <a class="text-blue-400 hover:text-blue-300 inline-flex items-center gap-2"
+         href="https://musicmap.info/" target="_blank" rel="noopener">
+        <i class="fa-solid fa-up-right-from-square"></i>
+        musicmap.info
+      </a>
+      <span class="text-gray-500">•</span>
+      <span class="text-gray-400">By Dylan Francis</span>
+      <span class="text-gray-500">•</span>
+      <span class="text-gray-400">Spring 2026</span>
+    </div>
+  </header>
+
+  <article class="prose prose-invert max-w-none space-y-12">
+
+    <!-- INTRODUCTION -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-4">Introduction</h2>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        Musicmap is an interactive data visualization created by Belgian researcher Kwinten Crauwels
+        that attempts what the site calls "the ultimate genealogy of popular music genres." It plots
+        234 genres organized into 23 super-genres against a vertical timeline running roughly from
+        1880 to 2020, and connects them with three kinds of lines: primary influences, secondary
+        influences, and backlashes, which are genres that emerged as direct reactions against their predecessors.
+      </p>
+      <p class="text-lg leading-relaxed text-gray-200">
+        I chose Musicmap because of my love for music, so I wanted to find something that represented music in a unique way. I 
+        found Musicmap through online research into music visualizations and was drawn the unique way it displays how music genres inspired others either 
+        directly or indirectly.
+      </p>
+
+      <figure class="mt-8">
+        <img src="images/overview.png" alt="Zoomed-out view of the full Musicmap Carta showing all super-genres"/>
+      </figure>
+      <figcaption>The full Musicmap "Carta" at its default zoom level.</figcaption>
+    </section>
+
+    <!-- PURPOSE -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-4">Purpose</h2>
+      <p class="text-lg leading-relaxed text-gray-200 mb-4">
+        Crauwels states six goals for the project on the site's About page. Condensed, they are:
+      </p>
+      <ol class="list-decimal list-inside text-lg leading-relaxed text-gray-200 space-y-2 mb-6">
+        <li>Teach the fundamentals of popular music genres to anyone, regardless of background.</li>
+        <li>Inspire people to explore music outside their usual preferences.</li>
+        <li>Provide a reference for music database standardization.</li>
+        <li>Serve as a collaborative platform for refining genre definitions over time.</li>
+        <li>Promote nuanced genre discussion and discourage oversimplification.</li>
+        <li>Reduce genre-based prejudice by giving each genre historical context.</li>
+      </ol>
+      <p class="text-lg leading-relaxed text-gray-200 mb-4">
+        The visualization delivers strongest on goals one, two, and six. The Carta is genuinely
+        readable at a high level even for someone with no music theory background, and the
+        nine-song playlists attached to every genre make exploration a natural loop: hover an
+        adjacent genre, click, listen, decide whether you want to go further. The historical and
+        cultural context in each description does real work against lazy genre stereotyping,
+        which supports the anti-prejudice goal in practice rather than just as a slogan.
+      </p>
+      <p class="text-lg leading-relaxed text-gray-200">
+        The other three goals feel more aspirational than delivered. Goal four, the collaborative
+        platform, is the weakest: the site is effectively static, with no mechanism for users to
+        propose revisions or submit alternative lineages. Goal three, database standardization,
+        is partially met in that the taxonomy is structured and consistent, but true
+        standardization would require community consensus rather than a single curator's call.
+        And goal five, promoting nuance, is a half-delivery: the three relationship types do add
+        nuance, but the rigid super-genre columns themselves force an oversimplification that the
+        encoding then has to fight against.
+      </p>
+    </section>
+
+    <!-- THE DATA -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-4">The Data</h2>
+      <p class="text-lg leading-relaxed text-gray-200 mb-4">
+        The underlying dataset is the result of over seven years of research drawing from more than
+        200 academic sources, including music histories, encyclopedias, documentaries, and specialist websites.
+        Each genre in the dataset carries:
+      </p>
+      <ul class="list-disc list-inside text-lg leading-relaxed text-gray-200 space-y-2 mb-6">
+        <li>A name and super-genre grouping (e.g. "Bebop" belongs to "Jazz")</li>
+        <li>An origin year and geographic origin</li>
+        <li>A prose description of the genre's defining characteristics</li>
+        <li>A curated nine-song example playlist</li>
+        <li>A list of primary parents, secondary influences, and backlash relationships to other genres</li>
+      </ul>
+      <p class="text-lg leading-relaxed text-gray-200">
+        Because genres are organic cultural phenomena rather than discrete objects, Crauwels is
+        explicit that the map represents a retrospective interpretation rather than ground truth.
+        The data was captured manually by a single curator and his collaborators, which is both
+        the project's greatest strength (careful, researched curation) and its fundamental
+        limitation (one person's interpretation of a contested taxonomy).
+      </p>
+    </section>
+
+    <!-- AUDIENCE -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-4">Intended Audience</h2>
+      <p class="text-lg leading-relaxed text-gray-200">
+        Musicmap is pitched broadly. Crauwels says the site is for "anyone, regardless of age and
+        education." In practice the tool rewards two distinct user types: curious listeners who want
+        to discover new genres adjacent to what they already like, and music writers, researchers,
+        and database curators who need a reference for genre lineage. The nine-song playlists per
+        genre make the map immediately useful to the former group, while the structured relationship
+        data serves the latter.
+      </p>
+    </section>
+
+    <!-- WALKTHROUGH -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-4">Walking Through the Tool</h2>
+
+      <h3 class="text-2xl font-semibold mt-8 mb-3">The Carta</h3>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        The main view is a large pannable, zoomable canvas called the "Carta," where each genre appears
+        as a labeled node. Time runs vertically with older genres at the top and newer ones at the
+        bottom, and super-genres are spread horizontally, each with its own color. Zooming out
+        collapses the view to just the 23 super-genres; zooming in reveals the full 234-genre
+        detail.
+      </p>
+
+      <figure>
+        <img src="images/carta-zoomed.png" alt="Zoomed-in view of the Carta showing individual genre nodes and connecting influence lines"/>
+      </figure>
+      <figcaption>Zoomed in on a region of the Carta. Each node is a genre; lines are influences.</figcaption>
+
+      <h3 class="text-2xl font-semibold mt-10 mb-3">Hover and Relationship Highlighting</h3>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        Hovering over a genre highlights all of its relationships (parents, children, secondary
+        influences, and backlashes) while dimming everything else. This is the single most
+        effective interaction in the tool: the Carta is visually dense by necessity, and the hover
+        state transforms it from a wall of labels into a focused subgraph about one genre.
+      </p>
+
+      <figure>
+        <img src="images/relationships.png" alt="Hover state on a single genre, with its influence lines highlighted against a dimmed backdrop"/>
+      </figure>
+      <figcaption>Hovering on a genre isolates its relationships against the dimmed backdrop.</figcaption>
+
+      <h3 class="text-2xl font-semibold mt-10 mb-3">Genre Detail Panel</h3>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        Clicking a genre opens a side panel with its full description, origin year and region, and
+        the nine-song playlist embedded via external music services. The playlist is what makes the
+        detail panel more than a Wikipedia clone, since you can actually hear what "Darkwave" or "Tuareg
+        Blues" sounds like without leaving the page.
+      </p>
+
+      <figure>
+        <img src="images/genre-detail.png" alt="Genre detail panel open on a specific genre, showing its description and embedded nine-song playlist"/>
+      </figure>
+      <figcaption>The detail panel grounds each abstract genre label in actual music.</figcaption>
+
+      <h3 class="text-2xl font-semibold mt-10 mb-3">Search and Browse</h3>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        A keyword search scans genre names, descriptions, and playlists, which is useful when you
+        know a song or artist but not the genre. An alphabetical list view offers a flat index as
+        a fallback for users who want to navigate without the spatial metaphor.
+      </p>
+
+      <figure>
+        <img src="images/search.png" alt="Musicmap search bar with an example query and matching results across genres and playlists"/>
+      </figure>
+      <figcaption>Search surfaces matches across genre names and their playlist content.</figcaption>
+    </section>
+
+    <!-- INSIGHTS -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-4">Questions and Insights</h2>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        The visualization is well-suited to questions like: <em>Where did this genre come from?</em>
+        <em>What other genres share its lineage?</em> <em>What emerged as a reaction against it?</em>
+        <em>What was happening in music in a given decade?</em> Because time is the vertical axis,
+        you can read horizontal "slices" of the map as snapshots of the musical landscape at any
+        point in the last 140 years.
+      </p>
+
+      <h3 class="text-2xl font-semibold mt-8 mb-3">Insight 1: Grunge as a two-sided backlash node</h3>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        Hovering on Grunge reveals an unusual structural position: it is both the <em>result</em> of
+        a backlash and the <em>target</em> of one. The Carta draws incoming anti-links to Grunge
+        from Glam / Hair / Pop Metal and Glam / Glitter / Shock Rock, which is the canonical
+        "Nirvana killed hair metal" story drawn as a line. Musicmap's own genre description puts it
+        plainly: <em>"The focus on glamour and fashion in many eighties' music formed the catalyst
+        of a fierce anti-movement."</em> Grunge's dressed-down aesthetic, distorted guitars, and
+        introspective lyrics were a deliberate repudiation of late-80s metal spectacle.
+      </p>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        But there is also an outgoing anti-link from Britpop back to Grunge, and Musicmap's copy
+        for Britpop makes the relationship explicit:
+        <em>"If every reaction has a 're-reaction', then Britpop is the re-reaction to Grunge
+        (since Grunge was a reaction itself against Glam Metal)."</em>
+        Oasis, Blur, and Pulp positioned themselves against American grunge's miserabilism and
+        reclaimed melodic British guitar pop as a brighter, cockier cultural posture.
+      </p>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        The full chain reads: Glam Metal → [backlash] → Grunge → [backlash] → Britpop. That is a
+        complete generational pivot, captured in two line-styles on a single screen. Most genre
+        taxonomies cannot represent this kind of oppositional lineage because they only model
+        "A influenced B." Musicmap's anti-link encoding makes a real force in music history
+        legible at a glance, and the prose descriptions use the <em>exact same framing</em> as the
+        lines do, which is a small but nice bit of internal consistency between the two views of
+        the same data.
+      </p>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        On top of the backlash pattern, Grunge's primary influences cut across super-genre columns:
+        Punk, Thrash Metal, and Noise Rock all feed in as parents, with Jangle Pop / Indie Rock as
+        a secondary influence. Musicmap's description sums it up as
+        <em>"one part Metal, one part Hardcore/Rock"</em>, and on the Carta this reads as solid
+        lines stretching across the grid from multiple directions. Classic Metal also reaches
+        Grunge as a deeper ancestor through Thrash Metal, so the multi-hop lineage and the genre
+        prose line up once you trace it. Grunge is exactly the kind of hybrid genre the rigid
+        super-genre layout is forced to dramatize rather than hide.
+      </p>
+
+      <figure>
+        <img src="images/insight-1.png" alt="Grunge hover state: incoming anti-links from Glam Metal, primary influences from Punk, Thrash Metal, and Noise Rock, and an outgoing anti-link to Britpop"/>
+      </figure>
+      <figcaption>Grunge sits at a crossroads of influence and reaction. Solid lines are primary influences; dashed lines are secondary; the anti-links to Glam Metal and Britpop make visible an oppositional lineage that most genre taxonomies cannot encode.</figcaption>
+
+      <h3 class="text-2xl font-semibold mt-10 mb-3">Insight 2: What an anti-link really means - Old Skool Rap and Disco</h3>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        Hovering on Old Skool Rap Pioneers pulls in primary-influence lines from Early Funk &amp;
+        P-Funk, Go-Go, and (Roots) Reggae, and an anti-link back to Disco. The anti-link is
+        surprising at first, because Musicmap's own description of Old Skool Rap calls Disco a
+        <em>"large influence"</em> and names the New York club Disco Fever as the place where rap
+        first reached a crowd. If Disco was such a formative influence, why is the line encoded as
+        a backlash?
+      </p>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        The answer is a useful framing of what an anti-link actually represents on this map.
+        Old Skool Rap was not a direct ideological anti-influence to Disco; it was an evolutionary
+        offshoot that repurposed Disco's musical foundations while rejecting its mainstream,
+        commercial, hedonistic culture. Early hip-hop was literally built on playing, mixing, and
+        rapping over Disco and Funk records, but by the early 1980s it had developed into a
+        distinct counterculture that effectively replaced the Disco era in New York City. The
+        "against" in the anti-link is cultural and class-based, not sonic. Rap took Disco's records
+        and turned them into something the Studio 54 scene could not have imagined: a platform for
+        the voices of the South Bronx, a poor and largely Black and Latino neighborhood that
+        Disco's Manhattan glamour had locked out.
+      </p>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        This makes the Disco anti-link a good teaching example of what Musicmap's backlash
+        encoding can and cannot show. The graph captures the "against" relationship cleanly, but
+        the nature of the opposition (sonic, cultural, audience, or attitude) has to come from the
+        prose. The anti-link is a pointer; the description is the story.
+      </p>
+      <p class="text-lg leading-relaxed text-gray-200 mb-6">
+        Beyond the Disco dynamic, Old Skool Rap is a major hub on the Carta. Solid outgoing lines
+        connect it to West Coast Gangsta Rap, Golden Age Rap &amp; Hardcore Rap, Miami Bass &amp;
+        Bounce, Electro, and Freestyle &amp; Breakdance. Essentially all modern Hip-Hop descends
+        from this tiny South Bronx scene, making it one of the clearest examples on the map of how
+        a single localized experiment can seed an entire super-genre. The incoming primary lines
+        are equally localized in their own way: Jamaican DJ Kool Herc brought the sound-system
+        concept directly from Kingston to the Bronx, which is why (Roots) Reggae is a primary
+        parent even though it sits in an entirely different super-genre column.
+      </p>
+
+      <figure>
+        <img src="images/insight-2.png" alt="Old Skool Rap Pioneers hover state: primary influences from Early Funk, Go-Go, and Roots Reggae, an anti-link to Disco, and outgoing lines to the rap and electro super-genre"/>
+      </figure>
+      <figcaption>Old Skool Rap Pioneers as a hub. Primary influences (solid) come in from three different columns; the anti-link to Disco encodes a cultural rejection rather than a sonic one; outgoing solid lines seed almost the entire rap / electro super-genre.</figcaption>
+    </section>
+
+    <!-- CRITIQUE -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-4">Design Critique</h2>
+
+      <h3 class="text-2xl font-semibold mt-6 mb-3">What Works</h3>
+      <ul class="list-disc list-inside text-lg leading-relaxed text-gray-200 space-y-3 mb-8">
+        <li>
+          <strong>Time as a vertical axis</strong> is legible at a glance. You don't need a legend
+          to understand that lines going downward mean "this genre influenced that later one."
+        </li>
+        <li>
+          <strong>Backlash as a first-class relationship type</strong> is unusual and thoughtful.
+          Most music taxonomies only encode "derived from." Musicmap acknowledges that genres
+          also emerge in opposition to others, and encodes that visually.
+        </li>
+        <li>
+          <strong>Super-genre color coding</strong> lets you spot large families from far away,
+          which is essential given the information density.
+        </li>
+        <li>
+          <strong>Embedded playlists</strong> collapse the gap between label and listening. Every
+          abstract genre name is one click from an actual song.
+        </li>
+      </ul>
+
+      <h3 class="text-2xl font-semibold mt-6 mb-3">What Could Be Better</h3>
+      <ul class="list-disc list-inside text-lg leading-relaxed text-gray-200 space-y-3 mb-6">
+        <li>
+          <strong>The rigid grid fights the data.</strong> Genres don't respect tidy super-genre
+          boundaries (Hip Hop draws from Funk, Disco, and Jamaican Dub), but the horizontal axis
+          forces each genre into one column, which stretches cross-super-genre lines across the
+          whole canvas and makes them hard to follow.
+        </li>
+        <li>
+          <strong>No filter by relationship type.</strong> You can't say "show me only backlashes"
+          or "hide secondary influences" to reduce clutter. The three line styles are distinguishable
+          but visually noisy when overlapping.
+        </li>
+        <li>
+          <strong>Time is non-linear but presented as linear.</strong> Musical innovation clusters
+          (the 1970s alone produced dozens of the mapped genres), but the vertical axis doesn't
+          signal this, so dense eras look the same as sparse ones.
+        </li>
+      </ul>
+    </section>
+
+    <!-- LIMITATIONS -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-4">Limitations</h2>
+      <p class="text-lg leading-relaxed text-gray-200 mb-4">
+        A few things the tool cannot do:
+      </p>
+      <ul class="list-disc list-inside text-lg leading-relaxed text-gray-200 space-y-3 mb-6">
+        <li>
+          <strong>No quantitative data.</strong> Musicmap encodes relationships as categorical
+          (primary / secondary / backlash) without any weight or strength. It can't tell you
+          <em>how much</em> Blues influenced Rock vs. Jazz.
+        </li>
+        <li>
+          <strong>No geographic dimension on the main view.</strong> Each genre has an origin
+          region in its detail panel, but you can't see the global flow of musical ideas across
+          continents on the Carta itself.
+        </li>
+        <li>
+          <strong>Frozen in time.</strong> The data ends around 2020 and is not collaboratively
+          updated despite the stated goal of community contribution. Hyperpop, drill, and other
+          late-2010s / early-2020s developments are underrepresented.
+        </li>
+        <li>
+          <strong>One curator's interpretation.</strong> The "ultimate genealogy" framing oversells
+          what is fundamentally one person's structured opinion. There's no mechanism for showing
+          alternative lineages or contested relationships.
+        </li>
+      </ul>
+    </section>
+
+    <!-- CONCLUSION -->
+    <section>
+      <h2 class="text-3xl font-semibold mb-4">Closing Thoughts</h2>
+      <p class="text-lg leading-relaxed text-gray-200 mb-4">
+        Musicmap is an ambitious and genuinely useful piece of information design. Its
+        most original contribution is the backlash encoding, which makes a real force in music
+        history (the generational push against what came before) legible on the same canvas as
+        the more conventional "A influenced B" relationships. The Grunge and Old Skool Rap
+        examples above only work as insights because of that extra line type. On most genre maps
+        they would collapse into uninteresting "derived from" relationships.
+      </p>
+      <p class="text-lg leading-relaxed text-gray-200">
+        The project's limits are mostly a function of its scope. Trying to represent 140 years
+        of popular music on a single 2D grid will always force compromises, and Musicmap's
+        compromises (rigid super-genre columns, uniform time spacing, no relationship weighting,
+        no community input) are visible from the first zoom. Those compromises are worth
+        discussing precisely because the tool otherwise works so well. It is rare for a
+        visualization to raise the specific questions you wish it would answer. Musicmap does,
+        and that is a sign it is doing more right than wrong.
+      </p>
+    </section>
+
+  </article>
+
+  <footer class="mt-16 pt-8 border-t border-gray-800 text-sm text-gray-400">
+    <div class="flex flex-wrap justify-between items-center gap-4">
+      <span>Visual Interfaces for Data, Spring 2026</span>
+      <a class="text-blue-400 hover:text-blue-300" href="../">← Back to Portfolio</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

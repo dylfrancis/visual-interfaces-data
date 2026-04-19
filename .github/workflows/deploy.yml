@@ -40,6 +40,13 @@ jobs:
           npm run build
           cp -r dist/ ../../_site/project-1/
 
+      # Copy the static Visualization in the Wild page into _site/vis-in-the-wild/
+      - name: Copy Vis in the Wild
+        run: |
+          mkdir -p _site/vis-in-the-wild
+          cp -r projects/vis-in-the-wild/. _site/vis-in-the-wild/
+          rm -f _site/vis-in-the-wild/images/README.md
+
       - uses: actions/configure-pages@v4
 
       - uses: actions/upload-pages-artifact@v3
